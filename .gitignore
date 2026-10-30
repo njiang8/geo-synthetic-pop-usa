@@ -5,3 +5,7 @@ __pycache__/
 data/
 HANDOFF_*.md
 .claude/
+ut-parts
+modules.xml
+workspace.xml
+geo-synthetic-poverty-network.iml
