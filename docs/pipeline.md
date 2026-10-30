@@ -101,6 +101,24 @@ whole state.
 - `ut_c035_workplace.gpkg`: workplace points
 - `ut_c035_error_log.csv`: tracts that failed. In Salt Lake County, one tract with 16 people
   (`49035980000`) fails. That's expected; see the changelog.
+- `ut_c035_timing.csv`: elapsed wall-clock seconds for each tract's synthesis stages, tract
+  totals, input loading, result collection, and file writes. Timing is always enabled.
+- `ut_c035_timing_summary.csv`: counts, totals, averages, and maxima from those measurements.
+
+The terminal logs each stage as it finishes and prints a final summary with **count, total,
+average, and maximum seconds** per stage, plus average total synthesis time per tract.
+Successful and failed tracts are summarized separately; completed stages of a failed tract
+are excluded from successful-tract averages. The CSV's `status` describes the stage itself,
+while `tract_status` describes the outcome of the whole tract. Run-level rows have no tract.
+The terminal also reports total command time (from script entry after imports through timing
+reporting). Each state's total excludes the shared workplace-weight load and its final timing
+report; that shared load is recorded in each state's CSV but happens only once per command.
+Stage, tract, synthesis-loop, and state totals overlap, so do not add all CSV rows together.
+
+The progress bar estimates remaining **synthesis** time from completed tracts; loading and
+final collection/saving are outside that estimate. Timing includes disk waits and logging
+overhead. Timing CSVs vary between identical seeded runs and should be excluded from byte-for-byte
+comparisons of scientific outputs. `--dry-run` writes no timing files.
 
 ## 2. Build the social networks
 

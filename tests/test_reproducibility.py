@@ -120,6 +120,20 @@ def _pipeline(data_dir, seed):
     results = data_dir / 'results-data'
     state_dir = results / 'ut'
     assert not (state_dir / f'{RUN}_error_log.csv').exists(), (state_dir / f'{RUN}_error_log.csv').read_text()
+    timing = pd.read_csv(state_dir / f'{RUN}_timing.csv', dtype={'tract': str})
+    totals = timing[timing.scope == 'tract_total']
+    assert set(totals.tract) == set(TRACTS)
+    assert (totals.status == 'success').all()
+    assert (timing.elapsed_seconds >= 0).all()
+    for tract in TRACTS:
+        stages = timing[(timing.tract == tract) & (timing.scope == 'tract_stage')]
+        assert set(stages.stage) == {
+            'education snapshot', 'individual creation', 'household assignment', 'home placement',
+            'job assignment', 'workplace placement', 'education assignment', 'urban classification',
+            'verification'}
+        assert stages.elapsed_seconds.sum() <= totals.loc[totals.tract == tract, 'elapsed_seconds'].iloc[0]
+    assert {'load roads', 'synthesis loop', 'collect population', 'write population GeoPackage',
+            'state total'} <= set(timing.stage)
 
     # the network driver reads a pickle the synthesis driver does not yet write (Agent B's hand-off fix)
     pop = gpd.read_file(state_dir / f'{RUN}_population.gpkg')
@@ -131,7 +145,8 @@ def _pipeline(data_dir, seed):
 
     outputs = {}
     for path in sorted(results.rglob('*')):
-        if path.is_file() and path.suffix != '.pickle':
+        if (path.is_file() and path.suffix != '.pickle'
+                and not path.name.endswith(('_timing.csv', '_timing_summary.csv'))):
             outputs[str(path.relative_to(results))] = path.read_bytes()
     return outputs
 

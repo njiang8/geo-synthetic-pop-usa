@@ -33,6 +33,7 @@ def test_dry_run_one_county(tmp_path):
     result = _dry_run(tmp_path, '--state', 'ut', '--counties', '035')
     assert result.returncode == 0, result.stderr
     assert result.stdout.split() == ['49035100100', '49035100200']
+    assert not (tmp_path / 'results-data').exists()
 
 
 def test_dry_run_whole_state(tmp_path):
